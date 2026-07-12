@@ -105,43 +105,47 @@ def get_products_list(session:Session=Depends(get_session)):
 def update_product(new_product:ProductUpdate,session:Session=Depends(get_session)):
     product = session.get(Product,new_product.id)
     
+    if product is None:
+        raise HTTPException(status_code=400,detail="Product not found")
+
+    if new_product.name and new_product.name == product.name and find_products_with_same_name(session,new_product.id,new_product.name):
+            raise HTTPException(status_code=400,detail=f"Product with name of {new_product.name} has existed already!")
+
+
     updated_fields = new_product.model_dump(exclude_unset=True,exclude={"id","images","categories"})
-
-
-    if new_product.name:
-        if new_product.name != product.name:
-            found_product = find_products_with_same_name(session,new_product.id,new_product.name)
-
-            if found_product:
-                raise HTTPException(status_code=400,detail=f"Product with name of {new_product.name} has existed already!")
-
 
 
     for field,value in updated_fields.items():
         setattr(product,field,value)
-    
-    if new_product.images:
-         for idx,image_url in enumerate(new_product.images):
-            print("images=====\n",product.images)
-            image_exist = find_image_in_product(session,image_url,product.id)
 
-            if not image_exist:
-                new_image = ProductImage(product_id=product.id,
-                                        name=f"{product.name}_image_{idx}",
-                                        image_url = image_url,
-                                        alt_text=f"{product.name}_image_{idx}")
-                session.add(new_image)
 
-    if new_product.categories:
+    if new_product.images is not None:
+        existing_urls = {image.image_url for image in product.images}
+        print("====",existing_urls)
+        for idx,url in enumerate(new_product.images):
+
+            if url in existing_urls:
+                continue
+
+            product.images.append(ProductImage(product_id=product.id,name=f"{product.name}_image_{idx}",image_url = url,alt_text=f"{product.name}_image_{idx}"))
+            
+
+    if new_product.categories is not None:
+        existed_categories = {cat.name for cat in product.categories}
+
         for category_name in new_product.categories:
-            category_exists =find_category(session,category_name)
+            if category_name in existed_categories:
+                continue
 
-            if not category_exists:
-                new_category = Category(name=category_name)
-                session.add(new_category)
+            category =find_category(session,category_name)
+
+            if category is None:
+                category = Category(name=category_name)
+                session.add(category)
                 session.flush()
-                product.categories.append(new_category)
-        
+                product.categories.append(category)
+            
+            
     product.updated_at = datetime.now(timezone.utc)
 
     session.commit()
@@ -155,8 +159,8 @@ def update_product(new_product:ProductUpdate,session:Session=Depends(get_session
         description=product.description,
         created_at=product.created_at,
         updated_at=product.updated_at,
-        images=[img.image_url for img in product.images],  # Extract URLs
-        categories=[cat.name for cat in product.categories]  # Extract names
+        images=[img.image_url for img in product.images],  
+        categories=[cat.name for cat in product.categories] 
     )
 
 
