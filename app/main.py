@@ -7,9 +7,11 @@ from app.core.database import engine
 
 from app.api.users import router as user_router
 from app.api.products import router as product_router
+from app.api.orders import router as order_router
 
 from app.models.user import User
 from app.models.product import Product
+from app.models.order import Order
 
 
 
@@ -24,6 +26,7 @@ app  = FastAPI(lifespan=lifespan)
 
 app.include_router(user_router)
 app.include_router(product_router)
+app.include_router(order_router)
 
 @app.get("/")
 def root():

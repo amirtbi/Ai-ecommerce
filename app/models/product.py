@@ -4,6 +4,12 @@ from datetime import datetime,timezone
 
 
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.order import OrderItem
+
+
 class ProductCategoryLink(SQLModel,table=True):
     product_id:int = Field(foreign_key="product.id",primary_key=True)
     category_id:int = Field(foreign_key="category.id",primary_key=True)
@@ -26,6 +32,7 @@ class Product(SQLModel,table=True):
     description:Optional[str] = None
     images:List[ProductImage] = Relationship(back_populates="product")
     categories:List[Category] = Relationship(back_populates="products",link_model=ProductCategoryLink)
+    orderItems:List[OrderItem] = Relationship(back_populates="product")
     created_at:datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
 
 
