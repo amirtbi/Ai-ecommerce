@@ -38,11 +38,6 @@ def add_product(product_data:CreateProduct,session:Session=Depends(get_session))
          
          
             session.add(product_image)
-            session.flush()
-            new_product.images.append(product_image)
-
-
-     
 
     for category in product_data.categories:
 
@@ -53,12 +48,7 @@ def add_product(product_data:CreateProduct,session:Session=Depends(get_session))
         else:
             new_category = Category(name=category)
             session.add(new_category)
-            session.flush()
             new_product.categories.append(new_category)
-    
-    
-        
-
 
     
     session.commit()

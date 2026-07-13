@@ -24,6 +24,6 @@ class OrderItemResponse(BaseModel):
 
 class OrderResponse(BaseModel):
     id: int
-    items: list[OrderItemResponse]
+    items: list[OrderItemResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
