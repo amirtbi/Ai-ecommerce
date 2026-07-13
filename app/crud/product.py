@@ -51,3 +51,5 @@ def find_products_with_same_name(session:Session,new_product_name:str,new_produc
 def find_image_in_product(session:Session,image_url:str,product_id:str):
    return session.exec(select(ProductImage).where(ProductImage.product_id == product_id,ProductImage.image_url==image_url)).first()
    
+def get_product_image(session:Session,product_id:int):
+   return session.exec(select(ProductImage).where(ProductImage.product_id == product_id)).all()

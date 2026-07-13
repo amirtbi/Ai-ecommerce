@@ -19,7 +19,7 @@ class ProductResponse(BaseModel):
     description: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    images: List[str] = []  
+    # images: List[str] = []  
     categories: List[str] = [] 
     
     model_config = ConfigDict(from_attributes=True) 

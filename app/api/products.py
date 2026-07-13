@@ -1,13 +1,20 @@
-from fastapi import APIRouter,Depends,HTTPException
+from pathlib import Path
+from fastapi import APIRouter,Depends,HTTPException,UploadFile,File
 from sqlmodel import Session
 from app.core.database import get_session
 from app.schemas.products import CreateProduct
 from app.models.product import Product,ProductImage,Category
-from app.crud.product import find_product,find_category,get_products,find_products_with_same_name,find_image_in_product
+from app.crud.product import find_product,find_category,get_products,find_products_with_same_name,get_product_image
 from app.schemas.products import ProductUpdate,ProductResponse
 from datetime import datetime,timezone
+import shutil
+import uuid
 
 router = APIRouter(prefix="/product",tags=["Products"])
+
+
+UPLOAD_PATH = Path("uploads")
+UPLOAD_PATH.mkdir(exist_ok=True)
 
 
 @router.post("/add",response_model=ProductResponse)
@@ -28,16 +35,6 @@ def add_product(product_data:CreateProduct,session:Session=Depends(get_session))
 
     session.flush()
 
-
-    if product_data.images:
-        for idex,image_url in enumerate(product_data.images):
-            product_image  = ProductImage(product_id=new_product.id,
-                                       name=f"{new_product.name}_image_{idex}",
-                                       image_url=image_url,
-                                       alt_text=f"{new_product.name}_image_{idex}")
-         
-         
-            session.add(product_image)
 
     for category in product_data.categories:
 
@@ -63,7 +60,6 @@ def add_product(product_data:CreateProduct,session:Session=Depends(get_session))
         description=new_product.description,
         created_at=new_product.created_at,
         updated_at=new_product.updated_at,
-        images=[img.image_url for img in new_product.images],  
         categories=[cat.name for cat in new_product.categories] 
     )
 
@@ -71,15 +67,18 @@ def add_product(product_data:CreateProduct,session:Session=Depends(get_session))
 def get_products_list(session:Session=Depends(get_session)):
      products = get_products(session)
 
+
      result = []
      for product in products:
+        product_image = get_product_image(session,product.id)
+
         result.append({
             "id": product.id,
             "name": product.name,
             "price": product.price,
             "stocks": product.stocks,
             "description": product.description,
-            "images": [img.image_url for img in product.images],
+            "images": [img for img in product_image],
             "categories": [cat.name for cat in product.categories],
             "image_count": len(product.images),
             "category_count": len(product.categories)
@@ -153,6 +152,42 @@ def update_product(new_product:ProductUpdate,session:Session=Depends(get_session
         categories=[cat.name for cat in product.categories] 
     )
 
+
+
+
+@router.post("/upload/{product_id}/image")
+def upload_image(product_id:int,file:UploadFile =File(...),session:Session=Depends(get_session)):
+
+    product = session.get(Product,product_id)
+
+
+    if not product:
+        raise HTTPException(status_code=404,detail="Product not found")
+
+
+
+    filename = file.filename
+    filepath = UPLOAD_PATH / filename
+
+
+
+    try:
+        with open(filepath,"wb") as buffer:
+            shutil.copyfileobj(file.file,buffer)
+    except:
+        raise HTTPException(status_code=400,detail="File path does not exist")
+
+    image  = ProductImage(product_id=product_id,
+                                       name=f"{file.filename}",
+                                       image_url=f"uploads/{file.filename}",
+                                       alt_text=f"{filename}")
+    
+
+    session.add(image)
+    session.commit()
+    session.refresh(image)
+
+    return image
 
 
     

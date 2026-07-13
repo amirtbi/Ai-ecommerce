@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import SQLModel
 
 from app.core.database import engine
@@ -23,6 +25,8 @@ async def lifespan(app: FastAPI):
     yield
 
 app  = FastAPI(lifespan=lifespan)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(user_router)
 app.include_router(product_router)

@@ -30,11 +30,13 @@ class Product(SQLModel,table=True):
     stocks:int = Field(default=0)
     updated_at:Optional[datetime] = None
     description:Optional[str] = None
-    images:List[ProductImage] = Relationship(back_populates="product")
+    images:List[ProductImage] = Relationship(back_populates="product",  sa_relationship_kwargs={
+        "cascade": "all, delete-orphan"
+    })
     categories:List[Category] = Relationship(back_populates="products",link_model=ProductCategoryLink)
     orderItems:List[OrderItem] = Relationship(back_populates="product")
     created_at:datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
-
+  
 
 
 class ProductImage(SQLModel,table=True):
