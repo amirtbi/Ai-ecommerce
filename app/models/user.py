@@ -1,9 +1,11 @@
 from enum import Enum
-from sqlmodel import SQLModel,Field,Column,JSON
-from typing import Optional,List
+from sqlmodel import SQLModel,Field,Column,JSON,Relationship
+from typing import Optional,List,TYPE_CHECKING
 from datetime import datetime,timezone
 
 
+if TYPE_CHECKING:
+    from app.models.order import Order
 
 class UserRole(str,Enum):
     ADMIN = "admin"
@@ -23,3 +25,4 @@ class User(SQLModel,table=True):
     roles:List[UserRole] = Field(default_factory=lambda: ["customer"],
     sa_column=Column(JSON))
     created_at:datetime = Field(default_factory=lambda:datetime.now(timezone.utc))
+    orders:List[Order] = Relationship(back_populates="user")

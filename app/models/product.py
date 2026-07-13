@@ -2,8 +2,6 @@ from sqlmodel import SQLModel,Field,Relationship
 from typing import Optional,List
 from datetime import datetime,timezone
 
-
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -18,7 +16,6 @@ class Category(SQLModel,table=True):
     id:Optional[int] =Field(default=None,primary_key=True)
     name:str = Field(unique=True,index=True)
     products:List[Product] = Relationship(back_populates="categories",link_model=ProductCategoryLink)
-
 
 
 

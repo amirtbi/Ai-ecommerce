@@ -11,6 +11,13 @@ def create_user(session:Session,user:User):
 
 
 
+
+def find_user_by_id(session:Session,user_id:str):
+
+    query = select(User).where(User.id == user_id)
+
+    return session.exec(query).first()
+ 
 def find_user(session:Session,user_data:User):
 
     query = select(User).where(user_data.email == User.email or user_data.username==User.username)

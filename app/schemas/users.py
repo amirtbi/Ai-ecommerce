@@ -1,6 +1,5 @@
 from pydantic import BaseModel,ConfigDict
 from typing import List
-from enum import Enum
 from app.models.user import UserRole
 
 

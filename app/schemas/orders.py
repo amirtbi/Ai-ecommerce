@@ -9,6 +9,7 @@ class CreateOrderItem(BaseModel):
 
 class CreateOrder(BaseModel):
    items:List[CreateOrderItem]
+   user_id:str
 
 
 

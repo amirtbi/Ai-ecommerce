@@ -1,11 +1,13 @@
-from sqlmodel import Field,Column,SQLModel,Relationship
+from sqlmodel import Field,SQLModel,Relationship
 from typing import Optional,List
-from datetime import datetime,timezone
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.product import Product
+    from app.models.user import User
+
+
 
 
 class OrderItem(SQLModel,table=True):
@@ -23,6 +25,8 @@ class Order(SQLModel,table=True):
     id:Optional[int] = Field(default=None,primary_key=True)
 
     orderItems:List[OrderItem] =  Relationship(back_populates="order")
+    user_id:str = Field(foreign_key="user.id")
+    user: User = Relationship(back_populates="orders")
 
 
 

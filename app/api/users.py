@@ -14,8 +14,6 @@ router = APIRouter(prefix="/users",tags=["Users"])
 @router.post("/register")
 def register_user(user_data:UserCreate,session:Session = Depends(get_session)):
 
-
-
     hashed_password = hash_password(user_data.password)
 
     user_existed = find_user(session,user_data)
